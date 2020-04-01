@@ -1,19 +1,18 @@
 import React, { useEffect, useState, useRef } from "react";
 import { getAll, update } from "./BooksAPI";
-import { useBooks } from "./hooks";
+import useGlobal from "./store";
 const BookShelfChanger = function({ book, shelf }) {
-  const [books, setBooks] = useBooks();
+  const [state, actions] = useGlobal();
   const selected = useRef(null);
 
   const updateHandler = value => {
     update(book, value).then(res => {
       getAll().then(res => {
-        console.log(res);
         let result = res.reduce(function(h, obj) {
           h[obj.shelf] = (h[obj.shelf] || []).concat(obj);
           return h;
         }, {});
-        setBooks(result);
+        actions.setBooks(result);
       });
     });
   };
@@ -39,7 +38,6 @@ const BookShelfChanger = function({ book, shelf }) {
 export const Book = function({ data }) {
   const { imageLinks, title, author, shelf } = data;
 
-  console.log(data);
   return (
     <div className="book">
       <div className="book-top">
@@ -48,7 +46,7 @@ export const Book = function({ data }) {
           style={{
             width: 128,
             height: 193,
-            backgroundImage: `url(${imageLinks.thumbnail})`
+            backgroundImage: `url(${imageLinks && imageLinks.thumbnail})`
           }}
         ></div>
         <BookShelfChanger book={data} shelf={shelf}></BookShelfChanger>

@@ -5,7 +5,7 @@ import { Shelf } from "./Shelf";
 import { Search } from "./Search";
 import { BrowserRouter } from "react-router-dom";
 import { Link, Route } from "react-router-dom";
-import { useBooks } from "./hooks";
+import useGlobal from "./store";
 async function getBooks() {
   let res = await BooksAPI.getAll();
   return res;
@@ -17,7 +17,22 @@ const BooksApp = () => {
    * users can use the browser's back and forward buttons to navigate between
    * pages, as well as provide a good URL they can bookmark and share.
    */
-  const [books, setBooks] = useBooks();
+  const [state, actions] = useGlobal();
+  const [isLoading, setIsLoading] = useState(true);
+  const hasBooks = state.books && true;
+  useEffect(() => {
+    getBooks().then(res => {
+      let result = res.reduce(function(h, obj) {
+        h[obj.shelf] = (h[obj.shelf] || []).concat(obj);
+        return h;
+      }, {});
+      actions.setBooks(result);
+    });
+  }, []);
+  useEffect(() => {
+    console.log(state);
+    hasBooks && setIsLoading(false);
+  }, [state]);
 
   return (
     <BrowserRouter>
@@ -25,37 +40,39 @@ const BooksApp = () => {
         <Route path="/search">
           <Search></Search>
         </Route>
-        <Route
-          exact
-          path="/"
-          render={() => (
-            <div className="list-books">
-              <div className="list-books-title">
-                <h1>MyReads</h1>
-              </div>
-              <div className="list-books-content">
-                <div>
-                  {books && (
-                    <>
-                      <Shelf title="Currently Reading">
-                        {Object.values(books)[0]}
-                      </Shelf>
-                      <Shelf title="Want to Read">
-                        {Object.values(books)[1]}
-                      </Shelf>
-                      <Shelf title="Read">{Object.values(books)[2]}</Shelf>
-                    </>
-                  )}
+        {!isLoading ? (
+          <Route
+            exact
+            path="/"
+            render={() => (
+              <div className="list-books">
+                <div className="list-books-title">
+                  <h1>MyReads</h1>
+                </div>
+                <div className="list-books-content">
+                  <div>
+                    <Shelf title="Currently Reading">
+                      {hasBooks && state.books["currentlyReading"]}
+                    </Shelf>
+                    <Shelf title="Want to Read">
+                      {hasBooks && state.books["wantToRead"]}
+                    </Shelf>
+                    <Shelf title="Read">
+                      {hasBooks && state.books["read"]}
+                    </Shelf>
+                  </div>
+                </div>
+                <div className="open-search">
+                  <Link to="/search">
+                    <button>Add a book</button>
+                  </Link>
                 </div>
               </div>
-              <div className="open-search">
-                <Link to="/search">
-                  <button>Add a book</button>
-                </Link>
-              </div>
-            </div>
-          )}
-        />
+            )}
+          />
+        ) : (
+          "...loading"
+        )}
       </div>
     </BrowserRouter>
   );
