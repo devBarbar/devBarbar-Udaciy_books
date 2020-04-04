@@ -11,28 +11,24 @@ async function getBooks() {
   return res;
 }
 const BooksApp = () => {
-  /**
-   * TODO: Instead of using this state variable to keep track of which page
-   * we're on, use the URL in the browser's address bar. This will ensure that
-   * users can use the browser's back and forward buttons to navigate between
-   * pages, as well as provide a good URL they can bookmark and share.
-   */
   const [state, actions] = useGlobal();
   const [isLoading, setIsLoading] = useState(true);
   const hasBooks = state.books && true;
+
   useEffect(() => {
-    getBooks().then(res => {
-      let result = res.reduce(function(h, obj) {
+    getBooks().then((res) => {
+      let result = res.reduce(function (h, obj) {
         h[obj.shelf] = (h[obj.shelf] || []).concat(obj);
         return h;
       }, {});
+
       actions.setBooks(result);
     });
-  }, []);
+  }, [actions]);
+
   useEffect(() => {
-    console.log(state);
     hasBooks && setIsLoading(false);
-  }, [state]);
+  }, [state, hasBooks]);
 
   return (
     <BrowserRouter>
@@ -71,7 +67,23 @@ const BooksApp = () => {
             )}
           />
         ) : (
-          "...loading"
+          <div
+            style={{
+              display: "flex",
+              width: "100vw",
+              height: "100vh",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <div className="load-wrapp">
+              <div className="load-3">
+                <div className="line"></div>
+                <div className="line"></div>
+                <div className="line"></div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </BrowserRouter>

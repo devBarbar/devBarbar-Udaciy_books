@@ -1,14 +1,14 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { getAll, update } from "./BooksAPI";
 import useGlobal from "./store";
-const BookShelfChanger = function({ book, shelf }) {
-  const [state, actions] = useGlobal();
+const BookShelfChanger = function ({ book, shelf }) {
+  const [, actions] = useGlobal();
   const selected = useRef(null);
 
-  const updateHandler = value => {
-    update(book, value).then(res => {
-      getAll().then(res => {
-        let result = res.reduce(function(h, obj) {
+  const updateHandler = (value) => {
+    update(book, value).then((res) => {
+      getAll().then((res) => {
+        let result = res.reduce(function (h, obj) {
           h[obj.shelf] = (h[obj.shelf] || []).concat(obj);
           return h;
         }, {});
@@ -18,11 +18,11 @@ const BookShelfChanger = function({ book, shelf }) {
   };
 
   useEffect(() => {
-    selected.current.value = shelf;
+    selected.current.value = shelf || "none";
   }, [shelf]);
   return (
     <div className="book-shelf-changer">
-      <select ref={selected} onChange={e => updateHandler(e.target.value)}>
+      <select ref={selected} onChange={(e) => updateHandler(e.target.value)}>
         <option value="move" disabled>
           Move to...
         </option>
@@ -35,9 +35,8 @@ const BookShelfChanger = function({ book, shelf }) {
   );
 };
 
-export const Book = function({ data }) {
-  const { imageLinks, title, author, shelf } = data;
-
+export const Book = function ({ data }) {
+  const { imageLinks, title, authors, shelf } = data;
   return (
     <div className="book">
       <div className="book-top">
@@ -46,13 +45,13 @@ export const Book = function({ data }) {
           style={{
             width: 128,
             height: 193,
-            backgroundImage: `url(${imageLinks && imageLinks.thumbnail})`
+            backgroundImage: `url(${imageLinks && imageLinks.thumbnail})`,
           }}
         ></div>
         <BookShelfChanger book={data} shelf={shelf}></BookShelfChanger>
       </div>
       <div className="book-title">{title}</div>
-      <div className="book-authors">{author}</div>
+      <div className="book-authors">{authors && authors.join(", ")}</div>
     </div>
   );
 };

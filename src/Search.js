@@ -1,23 +1,69 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { search } from "./BooksAPI";
 import { Book } from "./Book";
 import { Link } from "react-router-dom";
-export const Search = function({ setShowSearchPage }) {
-  const [result, setResult] = useState(null);
-  async function doSearch(value) {
-    if (value !== "") {
-      let res = await search(value);
-      console.log(await res);
-      if (typeof res["error"] === "undefined") {
-        setResult(await res);
-        return res;
-      } else {
-        setResult(null);
-      }
+import useGlobal from "./store";
+
+const throttle = (func, limit) => {
+  let lastFunc;
+  let lastRan;
+  return function () {
+    const context = this;
+    const args = arguments;
+    if (!lastRan) {
+      func.apply(context, args);
+      lastRan = Date.now();
     } else {
-      setResult(null);
+      clearTimeout(lastFunc);
+      lastFunc = setTimeout(function () {
+        if (Date.now() - lastRan >= limit) {
+          func.apply(context, args);
+          lastRan = Date.now();
+        }
+      }, limit - (Date.now() - lastRan));
     }
-  }
+  };
+};
+
+export const Search = function ({ setShowSearchPage }) {
+  const [runSearch, setSearch] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [books, setBooks] = useGlobal();
+  const [result, setResult] = useState(null);
+  const input = useRef();
+  useEffect(() => {
+    const doSearch = async () => {
+      try {
+        console.log(input.current.value);
+        if (input.current.value === "") {
+          setResult([]);
+          return;
+        }
+        let res = await search(input.current.value);
+
+        Object.entries(books["books"]).forEach((book) => {
+          book[1].forEach((book) =>
+            res.forEach((newBook) =>
+              book.id === newBook.id ? (newBook.shelf = book.shelf) : null
+            )
+          );
+        });
+
+        setResult(await res);
+        setIsSearching(false);
+      } catch (e) {
+        setResult([]);
+      }
+    };
+
+    doSearch();
+
+    return () => {
+      setIsSearching(false);
+      setSearch(false);
+    };
+  }, [runSearch]);
+
   return (
     <div className="search-books">
       <div className="search-books-bar">
@@ -34,7 +80,8 @@ export const Search = function({ setShowSearchPage }) {
                   you don't find a specific author or title. Every search is limited by search terms.
                 */}
           <input
-            onChange={e => doSearch(e.target.value)}
+            onChange={(e) => throttle(setSearch(true), 1000)}
+            ref={input}
             type="text"
             placeholder="Search by title or author"
           />
@@ -43,8 +90,14 @@ export const Search = function({ setShowSearchPage }) {
       <div className="search-books-results">
         <ol className="books-grid">
           {result
-            ? result.map(book => <Book data={book}></Book>)
-            : "no results"}
+            ? result.map((book) => (
+                <Book
+                  key={book.id}
+                  shelf={console.log(book)}
+                  data={book}
+                ></Book>
+              ))
+            : ""}
         </ol>
       </div>
     </div>
