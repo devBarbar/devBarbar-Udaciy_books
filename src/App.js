@@ -10,7 +10,19 @@ async function getBooks() {
   let res = await BooksAPI.getAll();
   return res;
 }
-const BooksApp = () => {
+/**
+ * @description Takes the result from the API and generates an object where the Keys == Shelf
+ * @param {object} books
+ * @returns {object} Sum of a and b
+ */
+export function sortBooks(books) {
+  return books.reduce(function (h, obj) {
+    h[obj.shelf] = (h[obj.shelf] || []).concat(obj);
+    return h;
+  }, {});
+}
+
+const App = () => {
   const [state, actions] = useGlobal();
   const [isLoading, setIsLoading] = useState(true);
   const hasBooks = state.books && true;
@@ -18,12 +30,8 @@ const BooksApp = () => {
   useEffect(() => {
     getBooks().then((res) => {
       // Categorize the books into the three shelfs from the beginning
-      let result = res.reduce(function (h, obj) {
-        h[obj.shelf] = (h[obj.shelf] || []).concat(obj);
-        return h;
-      }, {});
-
-      actions.setBooks(result);
+      let booksInShelf = sortBooks(res);
+      actions.setBooks(booksInShelf);
     });
   }, [actions]);
 
@@ -62,7 +70,7 @@ const BooksApp = () => {
                 </div>
                 <div className="open-search">
                   <Link to="/search">
-                    <button>Add a book</button>
+                    <button />
                   </Link>
                 </div>
               </div>
@@ -86,4 +94,4 @@ const BooksApp = () => {
   );
 };
 
-export default BooksApp;
+export default App;

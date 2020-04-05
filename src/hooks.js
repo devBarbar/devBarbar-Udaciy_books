@@ -30,7 +30,10 @@ function associateActions(store, actions) {
   });
   return associatedActions;
 }
-
+/**
+ * @description Hook for Global State Management in the App
+ * https://github.com/andregardi/use-global-hook#readme
+ */
 const useGlobalHook = (React, initialState, actions) => {
   const store = { state: initialState, listeners: [] };
   store.setState = setState.bind(store);

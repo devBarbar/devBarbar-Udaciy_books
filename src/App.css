@@ -54,6 +54,11 @@ body,
   position: fixed;
   right: 25px;
   bottom: 25px;
+  cursor: pointer;
+}
+
+.open-search a {
+  cursor: pointer;
 }
 
 .open-search button {
@@ -69,9 +74,11 @@ body,
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   font-size: 0;
   outline: 0;
+  cursor: pointer;
 }
 
 .open-search button:hover {
+  cursor: pointer;
   background-color: rgb(0, 102, 0);
 }
 

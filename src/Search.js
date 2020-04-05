@@ -3,7 +3,11 @@ import { search } from "./BooksAPI";
 import { Book } from "./Book";
 import { Link } from "react-router-dom";
 import useGlobal from "./store";
-
+/**
+ * @description used to throttle the API Calls
+ * @param {function} func - The function to Throttle
+ * @param {int} limit - The time to throttle in ms
+ */
 const throttle = (func, limit) => {
   let lastFunc;
   let lastRan;
@@ -24,13 +28,21 @@ const throttle = (func, limit) => {
     }
   };
 };
-
-export const Search = function ({ setShowSearchPage }) {
+/**
+ * @description Represents the Search Page
+ * @constructor
+ */
+export const Search = function () {
   const [books] = useGlobal();
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const input = useRef();
+  /**
+   * @description Handles the Input Field,
+   *  gets the Value of the Input field as a ref,
+   * calls BooksAPI.search, Categorizes the Books which are already in one of our shelfs and handles Errors if
+   */
   const changeHandler = async () => {
     let inputValue = input.current.value;
     try {
