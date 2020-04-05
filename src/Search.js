@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { search } from "./BooksAPI";
 import { Book } from "./Book";
 import { Link } from "react-router-dom";
@@ -26,44 +26,47 @@ const throttle = (func, limit) => {
 };
 
 export const Search = function ({ setShowSearchPage }) {
-  const [runSearch, setSearch] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [books, setBooks] = useGlobal();
+  const [books] = useGlobal();
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const input = useRef();
-  useEffect(() => {
-    const doSearch = async () => {
-      try {
-        console.log(input.current.value);
-        if (input.current.value === "") {
+  const changeHandler = async () => {
+    let inputValue = input.current.value;
+    try {
+      setLoading(true);
+      let searchedBooks = await search(inputValue);
+      if (searchedBooks) {
+        if (typeof searchedBooks["error"] === "undefined") {
+          Object.entries(books["books"]).forEach((book) => {
+            book[1].forEach((book) =>
+              searchedBooks.forEach((newBook) =>
+                book.id === newBook.id ? (newBook.shelf = book.shelf) : null
+              )
+            );
+          });
+          setLoading(false);
+          setResult(await Promise.all(searchedBooks));
+          setError("");
+        } else {
+          setLoading(false);
           setResult([]);
-          return;
+          setError(`Could not Find ${inputValue}`);
         }
-        let res = await search(input.current.value);
-
-        Object.entries(books["books"]).forEach((book) => {
-          book[1].forEach((book) =>
-            res.forEach((newBook) =>
-              book.id === newBook.id ? (newBook.shelf = book.shelf) : null
-            )
-          );
-        });
-
-        setResult(await res);
-        setIsSearching(false);
-      } catch (e) {
+      } else {
+        setLoading(false);
         setResult([]);
+        setError("");
       }
-    };
-
-    doSearch();
-
-    return () => {
-      setIsSearching(false);
-      setSearch(false);
-    };
-  }, [runSearch]);
-
+    } catch (e) {
+      console.log(e);
+      if (inputValue) {
+        setError("AN ERROR OCCURED");
+      }
+      setLoading(false);
+      setResult([]);
+    }
+  };
   return (
     <div className="search-books">
       <div className="search-books-bar">
@@ -71,35 +74,38 @@ export const Search = function ({ setShowSearchPage }) {
           Close
         </Link>
         <div className="search-books-input-wrapper">
-          {/*
-                  NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                  You can find these search terms here:
-                  https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
-
-                  However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                  you don't find a specific author or title. Every search is limited by search terms.
-                */}
           <input
-            onChange={(e) => throttle(setSearch(true), 1000)}
+            onChange={throttle(changeHandler, 500)}
             ref={input}
             type="text"
             placeholder="Search by title or author"
           />
         </div>
       </div>
-      <div className="search-books-results">
-        <ol className="books-grid">
-          {result
-            ? result.map((book) => (
-                <Book
-                  key={book.id}
-                  shelf={console.log(book)}
-                  data={book}
-                ></Book>
-              ))
-            : ""}
-        </ol>
-      </div>
+      {!loading ? (
+        <div className="search-books-results">
+          <ol className="books-grid">
+            {result
+              ? result.map((book) => (
+                  <Book key={book.id} shelf={book} data={book}></Book>
+                ))
+              : ""}
+            {error && <h3>{error}</h3>}
+          </ol>
+        </div>
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            width: "100vw",
+            height: "100vh",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div class="lds-dual-ring"></div>
+        </div>
+      )}
     </div>
   );
 };

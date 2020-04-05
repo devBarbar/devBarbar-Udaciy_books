@@ -17,6 +17,7 @@ const BooksApp = () => {
 
   useEffect(() => {
     getBooks().then((res) => {
+      // Categorize the books into the three shelfs from the beginning
       let result = res.reduce(function (h, obj) {
         h[obj.shelf] = (h[obj.shelf] || []).concat(obj);
         return h;
@@ -27,6 +28,7 @@ const BooksApp = () => {
   }, [actions]);
 
   useEffect(() => {
+    // loading animation
     hasBooks && setIsLoading(false);
   }, [state, hasBooks]);
 
@@ -76,13 +78,7 @@ const BooksApp = () => {
               alignItems: "center",
             }}
           >
-            <div className="load-wrapp">
-              <div className="load-3">
-                <div className="line"></div>
-                <div className="line"></div>
-                <div className="line"></div>
-              </div>
-            </div>
+            <div class="lds-dual-ring"></div>
           </div>
         )}
       </div>

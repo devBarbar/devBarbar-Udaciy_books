@@ -200,47 +200,27 @@ button:active {
 }
 
 /* spiunner */
-.load-wrapp {
-  float: left;
-  width: 100px;
-  height: 100px;
-  margin: 0 10px 10px 0;
-  padding: 20px 20px 20px;
-  border-radius: 5px;
-  text-align: center;
-  background-color: #d8d8d8;
-}
-
-.load-wrapp p {
-  padding: 0 0 20px;
-}
-.load-wrapp:last-child {
-  margin-right: 0;
-}
-.line {
+.lds-dual-ring {
   display: inline-block;
-  width: 15px;
-  height: 15px;
-  border-radius: 15px;
-  background-color: #4b9cdb;
+  width: 80px;
+  height: 80px;
 }
-.load-3 .line:nth-last-child(1) {
-  animation: loadingC 0.6s 0.1s linear infinite;
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border-radius: 50%;
+  border: 6px solid #2e7c31;
+  border-color: #2e7c31 transparent #2e7c31 transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
 }
-.load-3 .line:nth-last-child(2) {
-  animation: loadingC 0.6s 0.2s linear infinite;
-}
-.load-3 .line:nth-last-child(3) {
-  animation: loadingC 0.6s 0.3s linear infinite;
-}
-@keyframes loadingC {
-  0 {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(0, 15px);
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
   }
   100% {
-    transform: translate(0, 0);
+    transform: rotate(360deg);
   }
 }
